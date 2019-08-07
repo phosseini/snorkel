@@ -18,6 +18,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+from snorkel.analysis.monitor import metrics_dict_to_dataframe
 from snorkel.analysis.utils import probs_to_preds
 from snorkel.classification.data import DictDataLoader
 from snorkel.classification.scorer import Scorer
@@ -375,7 +376,10 @@ class SnorkelClassifier(nn.Module):
 
     @torch.no_grad()
     def score(
-        self, dataloaders: List[DictDataLoader], remap_labels: Dict[str, str] = {}
+        self,
+        dataloaders: List[DictDataLoader],
+        remap_labels: Dict[str, str] = {},
+        as_dataframe=False,
     ) -> Dict[str, float]:
         """Calculate scores for the provided DictDataLoaders.
 
@@ -439,7 +443,10 @@ class SnorkelClassifier(nn.Module):
                     )
                     metric_score_dict[identifier] = metric_value
 
-        return metric_score_dict
+        if as_dataframe:
+            return metrics_dict_to_dataframe(metric_score_dict)
+        else:
+            return metric_score_dict
 
     def _get_labels_to_tasks(
         self, label_names: Iterable[str], remap_labels: Dict[str, str] = {}
